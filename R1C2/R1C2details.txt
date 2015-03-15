@@ -1,0 +1,70 @@
+﻿R1C2: Words With Friends Cheater
+
+
+Your goal is to create a program that finds the highest scoring arrangement of Words With Friends tiles. The points awarded for each tile are as follows:
+
+
+BLANK 0
+A 1
+B 4
+C 4
+D 2
+E 1
+F 4
+G 3
+H 3
+I 1
+J 10
+K 5
+L 2
+M 4
+N 2
+O 1
+P 4
+Q 10
+R 1
+S 1
+T 1
+U 2
+V 5
+W 4
+X 8
+Y 3
+Z 10
+
+
+A few notes:
+* Your program will not accept any arguments this time. When the program is run, it will output a prompt asking the user to input a space-delimited string of their tiles.
+* The maximum number of tiles is 7. Near the end of a game a user may have as few as 1.
+* You can assume the input is valid and follows the specified format exactly. You don’t necessarily need to add any error handling for the input.
+* Take into account that inputs may not necessarily contain a valid output.
+* Words With Friends awards an extra 35 points if all 7 tiles are used. Your program should take that into account.
+* Your output should include:
+   * the final word, each tile separated by spaces
+   * the point value of that word
+   * the remaining unused tiles (if any), each tile separated by spaces
+* If a BLANK tile is used in your final word, include BLANK in the appropriate place, and add its interpreted letter in parentheses at the end of the word. Take into account that Word With Friends has two BLANK tiles in each game, so two sets of parentheses may be necessary.
+* We should all use a main() function like Ian did in R1C1. It’s probably a good habit to get into, and also it’ll keep our code uniform. That’ll help keep your submissions anonymous.
+
+
+
+
+Example input 1:
+T B E O E N R
+
+
+Example input 2:
+T B E O E BLANK R
+
+
+Example output 1:
+B O N E R
+9
+T E
+
+
+Example output 2:
+(By the way, I don’t actually know if this is the highest scoring arrangement. It’s just an example guys. Take it easy.)
+B O BLANK E R (N)
+8
+T E
