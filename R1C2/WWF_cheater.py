@@ -3,6 +3,7 @@ import itertools
 
 global score_dict
 global wwf_dict
+global user_rack
 score_dict = {}
 wwf_dict = {}
 
@@ -29,10 +30,11 @@ def get_values():
 
 
 # get user input
-# return void
 def user_input():
     # ask user for letters on rack
+    global user_rack
     rack = raw_input("Please enter your letters separated by single spaces")
+    user_rack = rack[:]
     # make lower
     rack = str(rack)
     rack = rack.lower()
@@ -91,33 +93,40 @@ def get_wff_dictionary():
 
 
 # make all possible racks for a rack containing a blank
+# called in get_letter_perms
 def make_blank_racks(rack):
-    print "'rack' input into make_blank_racks(): ", rack
     all_racks = []
     # check how many blanks, add tiles once or twice
     blank_count = rack.count('blank')
     rack.remove('blank')
-    # make 26 racks ready to append to
-    a = 0
-    while a < 26:
-        all_racks.append(rack)
-        a += 1
-    print "26 racks without blank: ", all_racks
     curr_char_code = 97
-    # upper limit should be 123 - 101 for debugging
-    while curr_char_code < 100:
+    #print "all_racks before loop: ", all_racks
+    while curr_char_code < 123:
         curr_char = chr(curr_char_code)
-        print "appending " + curr_char + " to all_racks[%d]" % (curr_char_code - 97)
-        all_racks[curr_char_code-97].append(curr_char)
+        curr_rack = rack[:]
+        curr_rack.append(curr_char)
+        all_racks.append(curr_rack)
         curr_char_code += 1
     # return all_racks as list of lists of separate characters
-    print "all racks at end of make_blank_racks", all_racks
-    return all_racks
+    # print "all racks at end of make_blank_racks"
+    if 'blank' in all_racks[0]:
+        all_racks_copy = all_racks[:]
+        all_racks = []
+        print "recursing..."
+        for i in all_racks_copy:
+            rack_list = make_blank_racks(i)
+            for r in rack_list:
+                all_racks.append(r)
+        return all_racks
+    else:
+        return all_racks
 
 
 # use list of tiles to find all permutations in rack
-# return list of permutations
-def permute(rack):
+# return list of permutations as strings
+# called in find_best_word(rack)
+def get_letter_perms(rack):
+    print "getting letter permutations of all sizes..."
     # convert rack to string
     # if no 'blank', no problem
     # if blank, make list of racks to feed to itertools.permutations
@@ -130,38 +139,92 @@ def permute(rack):
         all_racks = make_blank_racks(rack)
     else:
         # append only rack to first index of all_racks[]
-        print "string has no blanks"
+        # print "string has no blanks"
         all_racks.append(rack)
+    # if there are no blanks, all_racks contains one list (one rack)
+    all_perms_strings = []
     for j in all_racks:
         # change first rack into string
         current_rack = ''.join(j)
-        print "current_rack: ", current_rack
-        # find permutations of that string
-        perms = itertools.permutations(current_rack)
-        # loop through perms and append to all_perms
-        for k in perms:
-            all_perms.append(k)
-    print "all perms before stringify loop: ", all_perms
-    all_perms_strings = []
+        # find permutations of that string and all sub-strings
+        rack_len = len(j)
+        all_lens = []
+        while rack_len > 0:
+            all_lens.append(rack_len)
+            rack_len -= 1
+        #print "all_lens ==", all_lens
+        for l in all_lens:
+            perms = itertools.permutations(current_rack, l)
+            # loop through perms and append to all_perms
+            for p in perms:
+                all_perms.append(p)
     for j in all_perms:
         perm_as_string = ''.join(j)
         all_perms_strings.append(perm_as_string)
-    print "all_racks: ", all_racks
-    print "all_perms: ", all_perms
-    print "all_perms_strings: ", all_perms_strings
-    return all_perms
+    # print "all_racks: ", all_racks
+    # print "all_perms: ", all_perms
+    #print "all_perms_strings: ", all_perms_strings
+
+    # get all n - 1, n - 2 ... n - (n-1) letter combinations
+
+    return all_perms_strings
 
 
+# ADD TICK-TOCK PREDICTION HERE
+# ADD SUPPORT FOR TIE-SCORE TOP WORD
 # find highest-scoring word
 def find_best_word(rack):
-    possible_words = permute(rack)
-    # compare all words for point value, return highest
-    pass
+    global wwf_dict
+    letter_perms = get_letter_perms(rack)
+    high_word = ''
+    high_score = 0
+    print "number of letter combinations to search: %i" % len(letter_perms)
+    for w in letter_perms:
+        #print "searching word " + w + " in dictionary"
+        is_word = w in wwf_dict.keys()  # check if word is in dictionary
+        if is_word:
+            score = wwf_dict[w]
+            if len(w) == 7: score = score + 35
+            if score > high_score:
+                high_word = w
+                high_score = score
+                print "word " + high_word + \
+                    " new high score with %i" % high_score
+    if high_score > 0:
+        print "\nbest word: " + high_word
+        print "score: %i" % high_score
+        return high_word
+    else:
+        print "high_score == 0; no word found"
+        return high_score
+
+    # get score for each word in dictionary, store highest scoring word
 
 
 def output(best_word):
-    # print best scoring word plus score
-    pass
+    print "\n-=-=-=-=-\noutput:"
+    global wwf_dict
+    global user_rack  # this is initial rack
+    print "initial user rack: ", user_rack
+    score = wwf_dict[best_word]
+    # format string to print as separate tiles
+
+    best_tiles = []
+    i = 0
+    while i < len(best_word):
+        best_tiles.append(best_word[i])
+        best_tiles.append(' ')
+        i += 1
+    # separately present leftover tiles
+    best_tiles_separated = ''.join(best_tiles)
+    print "best word: " + best_tiles_separated
+    print "score:", score
+    leftovers = list(user_rack)
+    for t in best_tiles:
+        leftovers.remove(t)
+    leftovers_str = ''.join(leftovers)
+    leftovers_str.strip()
+    print "leftovers: " + leftovers_str
 
 
 def main():
@@ -177,13 +240,8 @@ def main():
     while rack == -1:
         # user_input() returns -1 if rack is too large
         rack = user_input()
-    print "your rack = ", rack
-    #all_racks = permute(rack)
-    make_blank_racks(rack)
-    """
     best_word = find_best_word(rack)
     output(best_word)
-    """
 
 
 main()
