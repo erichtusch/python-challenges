@@ -172,11 +172,12 @@ def get_letter_perms(rack):
 
 # ADD TICK-TOCK PREDICTION HERE
 # ADD SUPPORT FOR TIE-SCORE TOP WORD
-# find highest-scoring word
+# find highest-scoring word output
 def find_best_word(rack):
     global wwf_dict
     letter_perms = get_letter_perms(rack)
-    high_word = ''
+    # high_word is list.  probably one word, but can have a tie
+    high_word = []
     high_score = 0
     print "number of letter combinations to search: %i" % len(letter_perms)
     for w in letter_perms:
@@ -186,13 +187,18 @@ def find_best_word(rack):
             score = wwf_dict[w]
             if len(w) == 7: score = score + 35
             if score > high_score:
-                high_word = w
+                high_word = [w]
                 high_score = score
-                print "word " + high_word + \
-                    " new high score with %i" % high_score
+                print high_word, "new high score :", high_score
+            elif score == high_score:
+                high_word.append(w)
+                high_score = score
+                print high_word, "new high score :", high_score
     if high_score > 0:
+        """
         print "\nbest word: " + high_word
         print "score: %i" % high_score
+        """
         return high_word
     else:
         print "high_score == 0; no word found"
@@ -202,29 +208,31 @@ def find_best_word(rack):
 
 
 def output(best_word):
+    # best_word will be list, can have more than one item (best word)
     print "\n-=-=-=-=-\noutput:"
     global wwf_dict
     global user_rack  # this is initial rack
     print "initial user rack: ", user_rack
-    score = wwf_dict[best_word]
-    # format string to print as separate tiles
-
-    best_tiles = []
-    i = 0
-    while i < len(best_word):
-        best_tiles.append(best_word[i])
-        best_tiles.append(' ')
-        i += 1
-    # separately present leftover tiles
-    best_tiles_separated = ''.join(best_tiles)
-    print "best word: " + best_tiles_separated
-    print "score:", score
-    leftovers = list(user_rack)
-    for t in best_tiles:
-        leftovers.remove(t)
-    leftovers_str = ''.join(leftovers)
-    leftovers_str.strip()
-    print "leftovers: " + leftovers_str
+    best_word_counter = 1
+    for w in best_word:
+        score = wwf_dict[w]
+        # format string to print as separate tiles
+        best_tiles = []
+        i = 0
+        while i < len(w):
+            best_tiles.append(w[i])
+            best_tiles.append(' ')
+            i += 1
+        # separately present leftover tiles
+        best_tiles_separated = ''.join(w)
+        if len(best_word) > 1:
+            print "best word", best_word_counter, ':', best_tiles_separated
+        else:
+            print "best word:", best_tiles_separated
+        best_word_counter += 1
+        print "score:", score
+    # YOU MUST RE-DO LEFTOVERS
+    print "RE-DO LEFTOVERS"
 
 
 def main():
